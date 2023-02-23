@@ -21,30 +21,24 @@ exports.create = async (req, res, next) => {
     }
 };
 
-exports.findAll = async (req, res , next) => {
-
+exports.findAll = async(req , res,next )=>{
     let documents = [];
 
-        try{
-            const contactService = new ContactService(MongoDB.client);
-            const {name} = req.query;
-            if(name){
-                documents = await contactService.findByName(name);
-            }else{
-                documents = await contactService.find({});
-            }
-         
+    try {
+        const contactService = new ContactService(MongoDB.client);
+        
+        const {name} = req.query;
+        if(name){
+            documents = await ContactService.findByName(name);
+        }else{
+            documents = await contactService.find({});
         }
-        catch (error){
-            return next(
-                new ApiError(
-                    500,
-                   "An error occurred while retrieving contacts"
-                )
-            );
-        }
-
-         return res.send(documents);
+    }catch (error){
+        return next(
+            new ApiError(500, "An error occurred while retrieving contact")
+        );
+    }
+    return res.send(documents);
 };
 
 exports.findOne = async (req, res , next) => {
@@ -64,7 +58,8 @@ exports.findOne = async (req, res , next) => {
             )
         );
     }
-}
+};
+
 
 exports.update = async (req, res, next) => {
     if(Object.keys(req.dody).length == 0){
@@ -88,34 +83,29 @@ exports.update = async (req, res, next) => {
     }
 };
 
-
-exports.delete = async (req, res, next) => {
-    if(Object.keys(req.dody).length == 0){
-        return next(new ApiError(404, "data to update can not empty"));
-
-    }
+exports.delete = async (req, res, next) =>{
     try {
-        const ContactService = new ContactService(MongoDB.client);
-        const document = await ContactService.delelte(req.params.id, req.body);
-
-        if(!document){
-            return next(new ApiError(404, "Contact mot found"));
-
+        const contactService = new ContactService(MongoDB.client);
+        
+        const document = await contactService.create(req.params.id);
+    if(!document){
+        return next (new ApiError(404, "contact not fond"));
+    }
+    return res.send({ message:"contact was deleted successfully"});
+    
+    }catch (error){
+            return next(
+                new ApiError(500, `Error updating contact with id=${req.params.id}`)
+            );
         }
-        return res.send({ message: "contact was delete successfully"});
-    }
-    catch (error){
-        return next(
-            new ApiError(500, `Error updating contact with id=${req.params.id}`)
-        );
-    }
 };
 
-
-exports.findALLFavorite = async (req, res, next) => {
+exports.findAllFavorite = async (_req, res, next) => {
     try {
-        const ContactService = new ContactService(MongoDB.client);
-        const document = await ContactService.findALLFavorite();
+        const contactService = new ContactService(MongoDB.client);
+        
+        const documents = await contactService.findFavorite();
+        return res.send(documents);
     }
     catch (error){
         return next(
@@ -126,12 +116,14 @@ exports.findALLFavorite = async (req, res, next) => {
 };
 
 
-exports.deleteAll = async (req, res, next) => {
+exports.deleteAll = async (_req, res, next) => {
     try {
-        const ContactService = new ContactService(MongoDB.client);
-        const document = await ContactService.deleteAll();
+        const contactService = new ContactService(MongoDB.client);
+        
+        const deletedCount = await contactService.deleteAll();
+
         return res.send({
-            message: `${deleteCount} contacts were delete successfully`,
+            message: `${deletedCount} contacts were delete successfully`,
         });
     }
     catch (error){
@@ -141,5 +133,3 @@ exports.deleteAll = async (req, res, next) => {
         );
     }
 };
-
-
